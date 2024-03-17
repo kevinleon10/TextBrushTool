@@ -29,8 +29,12 @@ import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.textbrushtool.ui.theme.TextBrushToolTheme
 
 class MainActivity : ComponentActivity() {
@@ -95,14 +99,23 @@ fun DrawTool() {
 @Composable
 fun DrawText() {
     val positions = remember {
-        mutableStateListOf(Pair(Offset(0.0F, 0.0F), Offset(0.0F, 0.0F)))
-    }
-    var currentIndex by remember {
-        mutableIntStateOf(0)
+        mutableStateListOf(Pair(Offset(0.0F, 0.0F), ""))
     }
     var previousTimeMillis by remember {
         mutableLongStateOf(0L)
     }
+    var currentIndex by remember {
+        mutableIntStateOf(1)
+    }
+    val textToDraw = "TEXT BRUSH"
+    val textMeasurer = rememberTextMeasurer()
+    remember(textToDraw) {
+        textMeasurer.measure(textToDraw)
+    }
+    val style = TextStyle(
+        fontSize = 50.sp,
+        color = Color.White,
+    )
 
     Canvas(
         modifier = Modifier
@@ -111,24 +124,26 @@ fun DrawText() {
                 detectDragGestures { change, _ ->
                     change.consumeAllChanges()
                     if (previousTimeMillis != change.previousUptimeMillis) {
-                        positions.add(currentIndex, Pair(change.position, change.position))
                         previousTimeMillis = change.uptimeMillis
                     } else {
                         positions.add(
-                            currentIndex,
-                            Pair(positions[currentIndex].first, change.position)
+                            Pair(
+                                change.position,
+                                textToDraw[currentIndex % textToDraw.length].toString()
+                            )
                         )
                         currentIndex++
                     }
                 }
             }
     ) {
-        positions.forEach {
-            drawLine(
-                start = it.first,
-                end = it.second,
-                color = Color.White,
-                strokeWidth = 5.dp.toPx()
+        for (i in 1 until positions.size) {
+            drawText(
+                textMeasurer = textMeasurer,
+                text = positions[i].second,
+                style = style,
+                maxLines = 1,
+                topLeft = positions[i].first
             )
         }
     }
