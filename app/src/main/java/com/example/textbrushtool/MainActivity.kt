@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -36,6 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.textbrushtool.ui.theme.TextBrushToolTheme
+import kotlin.math.atan2
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -121,6 +123,7 @@ fun DrawText() {
         modifier = Modifier
             .fillMaxSize()
             .pointerInput(Unit) {
+                // It only registers last position of the tap
                 detectDragGestures { change, _ ->
                     change.consumeAllChanges()
                     if (previousTimeMillis != change.previousUptimeMillis) {
@@ -137,14 +140,24 @@ fun DrawText() {
                 }
             }
     ) {
+        // It draws previous taps and new ones as well
         for (i in 1 until positions.size) {
-            drawText(
-                textMeasurer = textMeasurer,
-                text = positions[i].second,
-                style = style,
-                maxLines = 1,
-                topLeft = positions[i].first
+            // Angle calculation
+            val angle = atan2(
+                positions[i].first.y - (size.height / 2),
+                positions[i].first.x - (size.width / 2)
             )
+            rotate(
+                degrees = angle * 10, pivot = positions[i].first
+            ) {
+                drawText(
+                    textMeasurer = textMeasurer,
+                    text = positions[i].second,
+                    style = style,
+                    maxLines = 1,
+                    topLeft = positions[i].first
+                )
+            }
         }
     }
 }
