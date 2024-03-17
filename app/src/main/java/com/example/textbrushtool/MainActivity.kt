@@ -125,12 +125,16 @@ fun DrawText() {
         modifier = Modifier
             .fillMaxSize()
             .pointerInput(Unit) {
-                // It only registers last position of the tap
+                // It only registers last position of the drag when the distance is more than 80 pixels
                 detectDragGestures { change, _ ->
                     change.consumeAllChanges()
                     if (previousTimeMillis != change.previousUptimeMillis) {
                         previousTimeMillis = change.uptimeMillis
-                    } else {
+                    } else if (change.position.x - positions[currentIndex - 1].first.x > 80 ||
+                        positions[currentIndex - 1].first.x - change.position.x > 80 ||
+                        change.position.y - positions[currentIndex - 1].first.y > 80 ||
+                        positions[currentIndex - 1].first.y - change.position.y > 80
+                    ) {
                         positions.add(
                             Pair(
                                 change.position,
